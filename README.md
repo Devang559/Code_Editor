@@ -55,9 +55,9 @@ code_editor/
 ## ⚙️ Prerequisites
 
 ### Frontend
-- Node.js 18+
+
 - npm
-- React Native CLI
+- React Native expo
 - Android Studio
 - JDK 17+
 
