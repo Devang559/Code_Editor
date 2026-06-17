@@ -210,6 +210,6 @@ React Native App
 
 Developed as a full-stack mobile application using React Native, TypeScript, Spring Boot, and ngrok for remote code execution.
 <img width="134" height="278" alt="Image" src="https://github.com/user-attachments/assets/2f054f80-8be2-4455-96e8-86aa9fd6b577" />
-<img width="134" height="178" alt="Image" src="https://github.com/user-attachments/assets/5d91d8c7-2789-447b-8136-a8e6defc7742" />
-<img width="134" height="178" alt="Image" src="https://github.com/user-attachments/assets/87ea0a63-10d6-49bb-bd8f-837a81d37f7c" />
-<img width="134" height="178" alt="Image" src="https://github.com/user-attachments/assets/307db58b-108b-4ba4-884c-a30077e5e571" />
+<img width="134" height="278" alt="Image" src="https://github.com/user-attachments/assets/5d91d8c7-2789-447b-8136-a8e6defc7742" />
+<img width="134" height="278" alt="Image" src="https://github.com/user-attachments/assets/87ea0a63-10d6-49bb-bd8f-837a81d37f7c" />
+<img width="134" height="278" alt="Image" src="https://github.com/user-attachments/assets/307db58b-108b-4ba4-884c-a30077e5e571" />
