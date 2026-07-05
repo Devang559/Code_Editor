@@ -3,13 +3,16 @@ name: Docker Image CI/CD
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'code_editor/**'        # Triggers only if files inside the backend folder change
+      - '.github/workflows/**'  # Triggers if you modify this workflow file itself
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-    # 1. Checkout the repository code
+    # 1. Checkout the repository code from Devang559/Code_Editor
     - name: Checkout code
       uses: actions/checkout@v4
 
@@ -18,33 +21,32 @@ jobs:
       uses: actions/setup-java@v4
       with:
         java-version: '21'
-        distribution: 'temurin' # Popular, reliable OpenJDK distribution
-        cache: 'maven'          # Caches dependencies to speed up future builds
+        distribution: 'temurin'
+        cache: 'maven'
 
-    # 3. Clean and package the Java application into a JAR
+    # 3. Clean and package the Java application pointing directly to code_editor folder
     - name: Build artifact with Maven
-      run: mvn clean package
+      run: mvn -f code_editor/pom.xml clean package
 
     # 4. Log in to Docker Hub
     - name: Log in to Docker Hub
       uses: docker/login-action@v3
       with:
         username: ${{ secrets.DOCKER_HUB_USERNAME }}
-        password: ${{ secrets.DOCKER_HUB_TOKEN }} # Use a Personal Access Token (PAT) here
+        password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
-    # 5. Build the Docker image and push it to Docker Hub
+    # 5. Build and push the single Docker image for your backend
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
       with:
-        context: .
-        file: ./Dockerfile
+        context: ./code_editor
+        file: ./code_editor/Dockerfile
         push: true
-        # Tags it as 'latest' and with a unique timestamp
         tags: |
           ${{ secrets.DOCKER_HUB_USERNAME }}/code_editor:latest
           ${{ secrets.DOCKER_HUB_USERNAME }}/code_editor:${{ github.run_id }}
 
-    # 6. SSH into EC2 and deploy the new container
+    # 6. SSH into EC2 and deploy the single container
     - name: Deploy to EC2 via SSH
       uses: appleboy/ssh-action@v1.0.3
       with:
@@ -55,12 +57,12 @@ jobs:
           # Log in to Docker Hub inside EC2
           echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
           
-          # Stop and remove the existing container if it exists
+          # Stop and remove the old container if it exists
           docker stop code_editor-container || true
           docker rm code_editor-container || true
           
-          # Pull the latest image
+          # Pull the freshly built image
           docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/code_editor:latest
           
-          # Run the new container (adjust ports as needed)
+          # Run the new container on port 9090
           docker run -d --name code_editor-container -p 9090:9090 ${{ secrets.DOCKER_HUB_USERNAME }}/code_editor:latest
