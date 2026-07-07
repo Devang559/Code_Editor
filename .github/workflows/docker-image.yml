@@ -23,7 +23,9 @@ jobs:
 
     # 3. Clean and package the Java application pointing directly to code_editor folder
     - name: Build artifact with Maven
-      run: mvn -f code_editor/pom.xml clean package
+      run: |
+        chmod +x ./mvnw
+        ./mvn -f code_editor/pom.xml clean package
 
     # 4. Log in to Docker Hub
     - name: Log in to Docker Hub
