@@ -9,59 +9,57 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # 1. Checkout the repository code from Devang559/Code_Editor
-    - name: Checkout code
-      uses: actions/checkout@v4
+      # 1. Checkout the repository code from Devang559/Code_Editor
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    # 2. Set up Java JDK 21
-    - name: Set up JDK 21
-      uses: actions/setup-java@v4
-      with:
-        java-version: '21'
-        distribution: 'temurin'
-        cache: 'maven'
+      # 2. Set up Java JDK 21
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
 
-    # 3. Clean and package the Java application pointing directly to code_editor folder
-    - name: Build artifact with Maven
-      run: |
-        chmod +x ./mvnw
-        ./mvn -f code_editor/pom.xml clean package
+      # 3. Clean and package the Java application pointing directly to code_editor folder
+      - name: Build artifact with Maven
+        run: mvn -f code_editor/pom.xml clean package
 
-    # 4. Log in to Docker Hub
-    - name: Log in to Docker Hub
-      uses: docker/login-action@v3
-      with:
-        username: ${{ secrets.DOCKER_HUB_USERNAME }}
-        password: ${{ secrets.DOCKER_HUB_TOKEN }}
+      # 4. Log in to Docker Hub
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
-    # 5. Build and push the single Docker image for your backend
-    - name: Build and push Docker image
-      uses: docker/build-push-action@v5
-      with:
-        context: ./code_editor
-        file: ./code_editor/Dockerfile
-        push: true
-        tags: |
-          ${{ secrets.DOCKER_HUB_USERNAME }}/code_editor:latest
-          ${{ secrets.DOCKER_HUB_USERNAME }}/code_editor:${{ github.run_id }}
+      # 5. Build and push the single Docker image for your backend
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./code_editor
+          file: ./code_editor/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_HUB_USERNAME }}/code_editor:latest
+            ${{ secrets.DOCKER_HUB_USERNAME }}/code_editor:${{ github.run_id }}
 
-    # 6. SSH into EC2 and deploy the single container
-    - name: Deploy to EC2 via SSH
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ${{ secrets.EC2_USER }}
-        key: ${{ secrets.EC2_SSH_KEY }}
-        script: |
-          # Log in to Docker Hub inside EC2 using sudo
-          echo "${{ secrets.DOCKER_HUB_TOKEN }}" | sudo docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
-          
-          # Stop and remove the old container if it exists
-          sudo docker stop code_editor-container || true
-          sudo docker rm code_editor-container || true
-          
-          # Pull the freshly built image
-          sudo docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/code_editor:latest
-          
-          # Run the new container on port 9090
-          sudo docker run -d --name code_editor-container -p 9090:9090 ${{ secrets.DOCKER_HUB_USERNAME }}/code_editor:latest
+      # 6. SSH into EC2 and deploy the single container
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            # Log in to Docker Hub inside EC2 using sudo
+            echo "${{ secrets.DOCKER_HUB_TOKEN }}" | sudo docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+            
+            # Stop and remove the old container if it exists
+            sudo docker stop code_editor-container || true
+            sudo docker rm code_editor-container || true
+            
+            # Pull the freshly built image
+            sudo docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/code_editor:latest
+            
+            # Run the new container on port 9090
+            sudo docker run -d --name code_editor-container -p 9090:9090 ${{ secrets.DOCKER_HUB_USERNAME }}/code_editor:latest
