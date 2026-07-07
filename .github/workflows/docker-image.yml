@@ -2,10 +2,7 @@ name: Docker Image CI/CD
 
 on:
   push:
-    branches: [ "main" ]
-    paths:
-      - 'code_editor/**'        # Triggers only if files inside the backend folder change
-      - '.github/workflows/**'  # Triggers if you modify this workflow file itself
+    branches: [ "main" ] # Triggers on every push to the main branch
 
 jobs:
   build-and-deploy:
